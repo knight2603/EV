@@ -5,7 +5,7 @@ def main():
     ev = EVAgent()
     
     print("=" * 50)
-    print("E.V 0.1")
+    print("E.V 0.2")
     print("Asistente personal inteligente")
     print("=" * 50)
     print("Escribe 'salir' para cerrar E.V.\n")
@@ -15,7 +15,7 @@ def main():
         user_message = input ("Tu: ")
         
         if user_message.lower()== "salir":
-            print("E.V, Hasta luego Peter")
+            print("E.V, Hasta luego Sebas")
             break
         
         try:
