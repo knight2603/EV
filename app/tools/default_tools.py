@@ -1,5 +1,6 @@
 from app.tools.registry import ToolRegistry
 from app.tools.test_tool import TestTool
+from app.tools.memory_tool import MemoryTool
 
 
 def create_tool_registry():
@@ -8,6 +9,10 @@ def create_tool_registry():
     
     registry.register(
         TestTool()
+    )
+    
+    registry.register(
+        MemoryTool()
     )
     
     return registry

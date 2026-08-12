@@ -2,11 +2,10 @@ from app.memory.memory_manager import MemoryManager
 
 
 class MemoryController:
-    
+
     def __init__(self):
         self.memory = MemoryManager()
-        
-        
+
     def remember(
         self,
         content: str,
@@ -24,12 +23,12 @@ class MemoryController:
         )
 
         return True
-    
+
     def recall(self):
         return self.memory.get_memories()
-    
-    def search(self, query: str):
+
+    def search_memories(self, query):
         return self.memory.search_memories(query)
-    
+
     def forget(self, memory_id: int):
         return self.memory.delete_memory(memory_id)
