@@ -3,9 +3,13 @@ import os
 from dotenv import load_dotenv
 from groq import Groq
 
-from app.brain.prompts import EV_SYSTEM_PROMPT
+from app.brain.prompts import (EV_SYSTEM_PROMPT, EV_ROUTER_PROMPT)
 from app.memory.memory_controller import MemoryController
 
+from app.brain.action_parser import EVActionParser
+from app.brain.action_executor import EVActionExecutor
+from app.brain.router import EVRouter
+from app.tools.default_tools import create_tool_registry
 
 load_dotenv()
 
@@ -24,6 +28,18 @@ class EVAgent:
         self.client = Groq(api_key=api_key)
 
         self.memory = MemoryController()
+
+        self.tool_registry = create_tool_registry()
+        
+        self.router = EVRouter(
+            self.tool_registry
+        )
+        
+        self.action_parser = EVActionParser()
+        
+        self.action_executor = EVActionExecutor(
+            self.router
+        )
 
     def ask(self, message: str) -> str:
 
@@ -73,13 +89,16 @@ class EVAgent:
             )
 
             prompt = f"""
-                Estas son las memorias almacenadas de E.V.:
+                    Estas son las memorias almacenadas de E.V.:
 
-                {memory_text}
+                    {memory_text}
 
-                Responde al usuario utilizando únicamente estas memorias.
-                No inventes información.
-                """
+                    Responde al usuario utilizando únicamente estas memorias.
+                    No inventes información.
+
+                    Usuario:
+                    {message}
+                    """
 
             response = self.client.chat.completions.create(
                 model="openai/gpt-oss-20b",
@@ -98,7 +117,7 @@ class EVAgent:
             return response.choices[0].message.content
 
         # ==========================================
-        # CONVERSACIÓN NORMAL
+        # ROUTER / ACCIONES
         # ==========================================
 
         response = self.client.chat.completions.create(
@@ -106,7 +125,7 @@ class EVAgent:
             messages=[
                 {
                     "role": "system",
-                    "content": EV_SYSTEM_PROMPT
+                    "content": EV_ROUTER_PROMPT
                 },
                 {
                     "role": "user",
@@ -115,4 +134,12 @@ class EVAgent:
             ]
         )
 
-        return response.choices[0].message.content
+        raw_response = response.choices[0].message.content
+
+        action = self.action_parser.parse(
+            raw_response
+        )
+
+        return self.action_executor.execute(
+            action
+        )

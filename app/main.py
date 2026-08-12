@@ -5,7 +5,7 @@ def main():
     ev = EVAgent()
     
     print("=" * 50)
-    print("E.V 0.2")
+    print("E.V 0.3.1")
     print("Asistente personal inteligente")
     print("=" * 50)
     print("Escribe 'salir' para cerrar E.V.\n")
