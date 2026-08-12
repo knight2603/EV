@@ -2,6 +2,29 @@ from app.memory.database import get_connection
 
 
 class MemoryManager:
+    
+    def memory_exists(self, content: str) -> bool:
+        
+        connection = get_connection()
+        cursor = connection.cursor()
+        
+        cursor.execute(
+            """
+            SELECT id
+            FROM memories
+            WHERE LOWER(content) = LOWER(?)
+            LIMIT 1
+            """,
+            (content,)
+        )
+        
+        result = cursor.fetchone()
+        
+        connection.close()
+        
+        return result is not None
+    
+    
 
     def save_memory(
         self,
@@ -24,6 +47,9 @@ class MemoryManager:
         connection.commit()
         connection.close()
 
+
+
+
     def get_memories(self):
 
         connection = get_connection()
@@ -42,12 +68,14 @@ class MemoryManager:
         connection.close()
 
         return memories
-    
+
+
+
     def search_memories(self, query: str):
-        
+
         connection = get_connection()
         cursor = connection.cursor()
-        
+
         cursor.execute(
             """
             SELECT id, content, category, importance
@@ -57,9 +85,51 @@ class MemoryManager:
             """,
             (f"%{query}%",)
         )
-        
+
         memories = cursor.fetchall()
+
+        connection.close()
+
+        return memories
+    
+
+
+    def delete_memory(self, memory_id: int):
+
+        connection = get_connection()
+        cursor = connection.cursor()
+
+        cursor.execute(
+            """
+            DELETE FROM memories
+            WHERE id = ?
+            """,
+            (memory_id,)
+        )
+
+        deleted = cursor.rowcount
+
+        connection.commit()
+        connection.close()
+
+        return deleted > 0
+    
+    
+    
+    def clear_test_memories(self):
+        connection = get_connection()
+        cursor = connection.cursor()
         
+        cursor.execute(
+            """
+            DELETE FROM memories
+            WHERE category = 'test'
+            """
+        )
+        
+        deleted = cursor.rowcount
+        
+        connection.commit()
         connection.close()
         
-        return memories
+        return deleted

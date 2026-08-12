@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from groq import Groq
 
 from app.brain.prompts import EV_SYSTEM_PROMPT
-from app.memory.memory_manager import MemoryManager
+from app.memory.memory_controller import MemoryController
 
 
 load_dotenv()
@@ -23,14 +23,14 @@ class EVAgent:
 
         self.client = Groq(api_key=api_key)
 
-        self.memory = MemoryManager()
+        self.memory = MemoryController()
 
     def ask(self, message: str) -> str:
 
         message_lower = message.lower().strip()
 
         # ==========================================
-        # GUARDAR MEMORIA
+        # RECORDAR
         # ==========================================
 
         if message_lower.startswith("recuerda que"):
@@ -40,16 +40,19 @@ class EVAgent:
             if not memory_content:
                 return "¿Qué quieres que recuerde?"
 
-            self.memory.save_memory(
+            saved = self.memory.remember(
                 content=memory_content,
                 category="general",
                 importance=3
             )
 
-            return f"Entendido. Recordaré que {memory_content}"
+            if saved:
+                return f"Entendido. Recordaré que {memory_content}"
+
+            return "Ya tenía ese recuerdo guardado."
 
         # ==========================================
-        # MOSTRAR MEMORIA
+        # RECORDAR INFORMACIÓN
         # ==========================================
 
         if (
@@ -59,7 +62,7 @@ class EVAgent:
             or "recuerdas de mi" in message_lower
         ):
 
-            memories = self.memory.get_memories()
+            memories = self.memory.recall()
 
             if not memories:
                 return "Todavía no tengo recuerdos guardados."
@@ -70,13 +73,13 @@ class EVAgent:
             )
 
             prompt = f"""
-            Estas son las memorias que tengo almacenadas:
+                Estas son las memorias almacenadas de E.V.:
 
-            {memory_text}
+                {memory_text}
 
-            Responde al usuario utilizando estas memorias.
-            No inventes información que no aparezca aquí.
-            """
+                Responde al usuario utilizando únicamente estas memorias.
+                No inventes información.
+                """
 
             response = self.client.chat.completions.create(
                 model="openai/gpt-oss-20b",
