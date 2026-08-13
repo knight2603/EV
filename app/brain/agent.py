@@ -1,28 +1,17 @@
-from app.config.settings import (
-    GROQ_API_KEY,
-    GROQ_MODEL
-)
-
+from app.config.settings import ( GROQ_API_KEY, GROQ_MODEL)
 from groq import Groq
-
 from app.brain.prompts import EV_ROUTER_PROMPT
-
 from app.brain.action_parser import EVActionParser
 from app.brain.action_executor import EVActionExecutor
 from app.brain.router import EVRouter
-
 from app.tools.default_tools import create_tool_registry
-
 from app.logs.conversation_logger import ConversationLogger
-
 from app.core.error_handler import EVErrorHandler
 from app.core.session_manager import SessionManager
-
 from app.conversation.conversation_manager import ConversationManager
 from app.conversation.context_builder import ContextBuilder
-
 from app.memory.memory_controller import MemoryController
-
+from app.brain.memory_intent_detector import MemoryIntentDetector
 
 class EVAgent:
 
@@ -72,6 +61,8 @@ class EVAgent:
         # ==========================================
 
         self.memory = MemoryController()
+        
+        self.memory_intent_detector = MemoryIntentDetector()
 
         # ==========================================
         # CONSTRUCTOR DE CONTEXTO
@@ -79,7 +70,8 @@ class EVAgent:
 
         self.context_builder = ContextBuilder(
             self.conversation,
-            self.memory
+            self.memory,
+            self.memory_intent_detector
         )
 
         # ==========================================
@@ -131,7 +123,6 @@ class EVAgent:
         )
 
         try:
-
             # ======================================
             # CONSTRUIR CONTEXTO
             # ======================================
@@ -141,35 +132,9 @@ class EVAgent:
             )
 
             history = context["history"]
-
             memories = context["memories"]
+            memory_intent = context["memory_intent"]
 
-            # ======================================
-            # CONSTRUIR TEXTO DE MEMORIA
-            # ======================================
-
-            if memories:
-
-                memory_text = "\n".join(
-                    f"- {memory[1]}"
-                    for memory in memories
-                )
-
-            else:
-
-                memory_text = (
-                    "No hay memorias relevantes."
-                )
-
-            # ======================================
-            # CONTEXTO PARA E.V.
-            # ======================================
-
-            context_message = f"""
-MEMORIAS RELEVANTES DE E.V.:
-
-{memory_text}
-"""
 
             # ======================================
             # MENSAJES PARA GROQ
@@ -179,15 +144,42 @@ MEMORIAS RELEVANTES DE E.V.:
                 {
                     "role": "system",
                     "content": EV_ROUTER_PROMPT
-                },
-                {
-                    "role": "system",
-                    "content": context_message
                 }
             ]
 
-            messages.extend(history)
 
+            # ======================================
+            # AGREGAR MEMORIAS SI EXISTEN
+            # ======================================
+
+            if memories:
+
+                memory_text = "\n".join(
+                    f"- {memory[1]}"
+                    for memory in memories
+                )
+
+                context_message = f"""
+            MEMORIAS RELEVANTES DE E.V.:
+
+            {memory_text}
+
+            Utiliza estas memorias únicamente cuando sean relevantes
+            para responder al usuario.
+            No inventes información que no aparezca aquí.
+            """
+
+                messages.append({
+                    "role": "system",
+                    "content": context_message
+                })
+
+
+            # ======================================
+            # AGREGAR HISTORIAL
+            # ======================================
+
+            messages.extend(history)
             # ======================================
             # GROQ
             # ======================================

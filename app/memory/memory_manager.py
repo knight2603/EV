@@ -76,11 +76,13 @@ class MemoryManager:
         connection = get_connection()
         cursor = connection.cursor()
 
+        query = query.strip().lower()
+
         cursor.execute(
             """
             SELECT id, content, category, importance
             FROM memories
-            WHERE content LIKE ?
+            WHERE LOWER(content) LIKE ?
             ORDER BY importance DESC, created_at DESC
             """,
             (f"%{query}%",)

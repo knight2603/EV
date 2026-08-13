@@ -230,6 +230,36 @@ Nunca omitas propiedades.
 Nunca agregues propiedades nuevas.
 Devuelve únicamente JSON válido.
 
+IMPORTANTE SOBRE arguments:
+
+La propiedad "arguments" SIEMPRE debe contener exactamente estas propiedades:
+
+{
+    "operation": null,
+    "content": null,
+    "category": null,
+    "importance": null,
+    "query": null
+}
+
+Para una acción "chat", todas deben ser null.
+
+Para una acción "tool", utiliza únicamente las propiedades necesarias y coloca null en las demás.
+
+Ejemplo de chat:
+
+{
+    "action": "chat",
+    "response": "¡Hola! ¿En qué puedo ayudarte?",
+    "tool": null,
+    "arguments": {
+        "operation": null,
+        "content": null,
+        "category": null,
+        "importance": null,
+        "query": null
+    }
+}
 
 1. Guardar información:
    memory + save
