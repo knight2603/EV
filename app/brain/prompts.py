@@ -139,6 +139,97 @@ Formato:
 }
 
 REGLAS:
+FORMATO OBLIGATORIO:
+
+Debes devolver SIEMPRE las propiedades:
+
+"action"
+"response"
+"tool"
+"arguments"
+
+Nunca omitas ninguna.
+
+Si action es "chat":
+
+- response contiene la respuesta.
+- tool debe ser null.
+- arguments debe ser {}.
+
+Ejemplo:
+
+{
+  "action": "chat",
+  "response": "¡Hola! ¿En qué puedo ayudarte?",
+  "tool": null,
+  "arguments": {}
+}
+
+Si action es "tool":
+
+- response debe ser null.
+- tool contiene el nombre de la herramienta.
+- arguments contiene todos los argumentos.
+
+Los argumentos SIEMPRE deben contener:
+
+"operation"
+"content"
+"category"
+"importance"
+"query"
+
+Cuando un argumento no sea necesario, utiliza null.
+
+Ejemplo para buscar memoria:
+
+{
+  "action": "tool",
+  "response": null,
+  "tool": "memory",
+  "arguments": {
+    "operation": "search",
+    "content": null,
+    "category": null,
+    "importance": null,
+    "query": "Python"
+  }
+}
+
+Ejemplo para guardar memoria:
+
+{
+  "action": "tool",
+  "response": null,
+  "tool": "memory",
+  "arguments": {
+    "operation": "save",
+    "content": "Estoy aprendiendo Java",
+    "category": "general",
+    "importance": 3,
+    "query": null
+  }
+}
+
+Ejemplo para test:
+
+{
+  "action": "tool",
+  "response": null,
+  "tool": "test",
+  "arguments": {
+    "operation": null,
+    "content": null,
+    "category": null,
+    "importance": null,
+    "query": null
+  }
+}
+
+Nunca omitas propiedades.
+Nunca agregues propiedades nuevas.
+Devuelve únicamente JSON válido.
+
 
 1. Guardar información:
    memory + save

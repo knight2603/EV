@@ -1,6 +1,7 @@
 class ConversationManager:
 
     def __init__(self, max_messages=20):
+
         self.messages = []
         self.max_messages = max_messages
 
@@ -20,9 +21,7 @@ class ConversationManager:
 
     def get_history(self):
 
-        return self.messages[
-            -self.max_messages:
-        ].copy()
+        return self.messages[-self.max_messages:].copy()
 
     def clear(self):
 

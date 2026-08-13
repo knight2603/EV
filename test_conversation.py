@@ -17,14 +17,14 @@ for i in range(1, 8):
     )
 
 
-print("=== HISTORIAL COMPLETO ALMACENADO ===")
+print("=== TOTAL ALMACENADO ===")
 
 print(
     len(conversation.messages)
 )
 
 
-print("\n=== HISTORIAL ENVIADO ===")
+print("\n=== HISTORIAL QUE RECIBE GROQ ===")
 
 history = conversation.get_history()
 
@@ -34,3 +34,12 @@ for message in history:
         f"{message['role']}: "
         f"{message['content']}"
     )
+    
+print("\n=== LIMPIANDO ===")
+
+conversation.clear()
+
+print(
+    f"Mensajes después de limpiar: "
+    f"{len(conversation.messages)}"
+)

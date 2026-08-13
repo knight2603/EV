@@ -15,10 +15,20 @@ class EVActionExecutor:
             )
             
         if action_type == "tool":
-            
+
             tool_name = action.get("tool")
-            arguments = action.get("arguments", {})
-            
+
+            arguments = action.get(
+                "arguments",
+                {}
+            )
+
+            arguments = {
+                key: value
+                for key, value in arguments.items()
+                if value is not None
+            }
+
             return self.router.execute(
                 tool_name,
                 **arguments
